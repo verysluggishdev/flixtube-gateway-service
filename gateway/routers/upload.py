@@ -1,11 +1,10 @@
-from typing import Optional
-from .. import schemas,models, oauth2
+from .. import models, oauth2
 from fastapi import Depends, APIRouter, UploadFile, File, status
 from sqlalchemy.orm import Session
 from ..database import get_db 
 from ..utils import generate_unique_file_name
 import os
-import base64
+
 
 
 router = APIRouter(
@@ -15,21 +14,38 @@ router = APIRouter(
 
 @router.post("", status_code=status.HTTP_201_CREATED)
 def upload(file: UploadFile = File(...), db: Session = Depends(get_db), current_user = Depends(oauth2.get_current_user)):
+    current_avatar = db.query(models.Avatar).filter(models.Avatar.owner_id == current_user.id).first()
+
     try:
-        if not os.path.exists('../../uploads'):
-            os.mkdir('../../uploads')
+        
+        if not os.path.exists('../uploads'):
+            os.mkdir('../uploads')
+        
         contents = file.file.read()
         filename = generate_unique_file_name(file.filename)
-        print(base64.b64decode(filename.encode()))
-        with open(f'uploads/{filename}', 'wb') as f:
+        
+        try:
+            extension = file.filename.split('.')[1]
+        except IndexError:
+            extension = ""
+        
+        with open(f'../uploads/{filename}.{extension}', 'wb') as f:
             f.write(contents)
+
     except Exception as e:
         print(e)
         return {"message": "There was an error uploading the file"}
+    
     finally:
         file.file.close()
-    new_avatar = models.Avatar(owner_id=current_user.id, filename=filename)
+
+    if current_avatar:
+        os.remove(f'../uploads/{current_avatar.filename}')
+        current_avatar.filename = f'{filename}.{extension}'
+        db.commit()
+        return {"message": f"Avatar was updated successfully"}
+        
+    new_avatar = models.Avatar(owner_id=current_user.id, filename=f'{filename}.{extension}')
     db.add(new_avatar)
     db.commit()
-    db.refresh(new_avatar)
-    return {"message": f"Avatar was updated successfully"}
+    return {"message": f"Avatar was created successfully"}
