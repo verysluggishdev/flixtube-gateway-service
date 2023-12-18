@@ -7,6 +7,8 @@ from pydantic.types import conint
 class UserOut(BaseModel):
     id: int
     email: EmailStr
+    channelID: str
+    channelName: str
     created_at: datetime
 
     class Config:
@@ -15,6 +17,8 @@ class UserOut(BaseModel):
 class UserCreate(BaseModel):
     email: EmailStr
     password: str
+    channelID: str
+    channelName: str
 
 class UserLogin(BaseModel):
     email: EmailStr
