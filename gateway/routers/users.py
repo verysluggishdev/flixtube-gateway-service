@@ -19,13 +19,18 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     hashed_password = utils.hash(user.password)
     user.password = hashed_password
 
-    new_user = models.User(**user.model_dump())
-    db.add(new_user)
-    try:
-        db.commit()
-    except sqlalchemy.exc.IntegrityError:
+    if db.query(models.User).filter(models.User.channelID == user.channelID).first():
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT,
+                            detail=f"channelID is already in use")
+    
+    if db.query(models.User).filter(models.User.email == user.email).first():
         raise HTTPException(status_code=status.HTTP_409_CONFLICT,
                             detail=f"email is already in use")
+
+    new_user = models.User(**user.model_dump())
+    db.add(new_user)
+    db.commit()
+    
 
     db.refresh(new_user)
 
