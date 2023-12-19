@@ -36,17 +36,12 @@ class TokenData(BaseModel):
     id: Optional[str] = None
 
 
-class PostCreate(BaseModel):
+
+class PostOut(BaseModel):
     title: str
     description: str
-    video: UploadFile = File(...)
-
-    class Config:
-        from_attributes = True
-
-class PostResponse(BaseModel):
-    title: str
-    description: str
+    thumbnail: str
+    video: str
     created_at: datetime
 
 @dataclass
@@ -60,3 +55,10 @@ class UpdatePostForm:
     title: Optional[str] = Form(None)
     description: Optional[str] = Form(None)
     video: Optional[UploadFile] = File(None)
+
+class PostOut(BaseModel):
+    title: str
+    description: str
+    thumbnail: str
+    video: str
+    created_at: datetime
