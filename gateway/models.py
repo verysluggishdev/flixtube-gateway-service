@@ -24,3 +24,12 @@ class Avatar(Base):
     updated_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
 
 
+class Post(Base):
+    __tablename__ = "posts"
+    id = Column(Integer, primary_key=True, nullable=False)
+    title = Column(String, index=True, nullable=False)
+    description = Column(String, index=True, nullable=False)
+    thumbnail = Column(String, index=True, nullable=False)
+    owner_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    owner = relationship("User")
+    created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))

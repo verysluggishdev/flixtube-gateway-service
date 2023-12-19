@@ -1,6 +1,8 @@
 from pydantic import BaseModel, EmailStr
 from datetime import datetime
 from typing import Optional
+from fastapi import File, UploadFile, Form
+from dataclasses import dataclass
 
 from pydantic.types import conint
 
@@ -32,3 +34,23 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     id: Optional[str] = None
+
+
+class PostCreate(BaseModel):
+    title: str
+    description: str
+    video: UploadFile = File(...)
+
+    class Config:
+        from_attributes = True
+
+class PostResponse(BaseModel):
+    title: str
+    description: str
+    created_at: datetime
+
+@dataclass
+class CreatePostForm:
+    title: str = Form(...)
+    description: str = Form(...)
+    video: UploadFile = File(...)
