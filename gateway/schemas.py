@@ -54,3 +54,9 @@ class CreatePostForm:
     title: str = Form(...)
     description: str = Form(...)
     video: UploadFile = File(...)
+
+@dataclass
+class UpdatePostForm:
+    title: Optional[str] = Form(None)
+    description: Optional[str] = Form(None)
+    video: Optional[UploadFile] = File(None)

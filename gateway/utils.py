@@ -3,6 +3,7 @@ from datetime import datetime
 from PIL import Image
 from moviepy.video.io.VideoFileClip import VideoFileClip
 import base64
+import os
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -40,4 +41,41 @@ def generate_video_thumbnail(input_video_path, output_thumbnail_path):
 
     # Close the video clip
     clip.close()
+
+def handleVideoUpload(video):
+
+    try:
+        
+        if not os.path.exists('../uploads'):
+            os.mkdir('../uploads')
+        
+        video_data = video.file.read()
+        video_file_name = generate_unique_file_name(video.filename)
+
+        
+        try:
+            extension = video.filename.split('.')[-1]
+        except IndexError:
+            extension = ""
+        
+        video_upload_path = f'../uploads/{video_file_name}.{extension}'
+        
+        with open(video_upload_path, 'wb') as f:
+            f.write(video_data)
+        
+        thumbnail_file_name = generate_unique_file_name(f'thumbnail_{video.filename}.jpeg')
+        
+        thumbnail_upload_path = f'../uploads/{thumbnail_file_name}.jpeg'
+
+        generate_video_thumbnail(video_upload_path, thumbnail_upload_path)
+
+
+    except Exception as e:
+        print(e)
+        return {"message": "There was an error uploading the file"}
+    
+    finally:
+        video.file.close()
+    
+    return f'{video_file_name}.{extension}', f'{thumbnail_file_name}.jpeg'
 
