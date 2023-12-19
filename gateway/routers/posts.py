@@ -55,6 +55,7 @@ def create_post(post: schemas.CreatePostForm = Depends(), db: Session = Depends(
     new_post = models.Post(title=post.title, 
                            description=post.description, 
                            thumbnail=thumbnail_file_name+".jpeg",
+                           video=f'{video_file_name}.{extension}',
                            owner_id=current_user.id
     )
 
