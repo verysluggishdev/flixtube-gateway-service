@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from typing import List
 from ..database import get_db 
 from sqlalchemy import func
-from ..utils import  handleVideoUpload
+from ..utils import handleFileUpload, generate_unique_file_name, generate_video_thumbnail
 import os
 
 router = APIRouter(
@@ -18,7 +18,11 @@ router = APIRouter(
 @router.post("", status_code=status.HTTP_201_CREATED)
 def create_post(post: schemas.CreatePostForm = Depends(), db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
     
-    video_file_name, thumbnail_file_name = handleVideoUpload(post.video)
+    video_file_name = handleFileUpload(post.video)
+
+    thumbnail_file_name = generate_unique_file_name(f"thumbnail_{post.video}")+'.jpeg'
+
+    generate_video_thumbnail(f'../uploads/{video_file_name}', f'../uploads/{thumbnail_file_name}')
     
     new_post = models.Post(title=post.title, 
                            description=post.description, 
@@ -57,8 +61,11 @@ def update_post(id: int, post: schemas.UpdatePostForm = Depends(), db: Session =
 
         os.remove(f'../uploads/{previous_post.thumbnail}')
         os.remove(f'../uploads/{previous_post.video}')
-        data = handleVideoUpload(post.video)
-        video_file_name, thumbnail_file_name = data
+        video_file_name = handleFileUpload(post.video)
+
+        thumbnail_file_name = generate_unique_file_name(f"thumbnail_{post.video}")+'.jpeg'
+        generate_video_thumbnail(f'../uploads/{video_file_name}', f'../uploads/{thumbnail_file_name}')
+        
         fields.update({'thumbnail': thumbnail_file_name, 'video': video_file_name})
 
 

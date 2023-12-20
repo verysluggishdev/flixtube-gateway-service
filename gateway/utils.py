@@ -42,40 +42,34 @@ def generate_video_thumbnail(input_video_path, output_thumbnail_path):
     # Close the video clip
     clip.close()
 
-def handleVideoUpload(video):
+def handleFileUpload(upload):
 
     try:
         
         if not os.path.exists('../uploads'):
             os.mkdir('../uploads')
         
-        video_data = video.file.read()
-        video_file_name = generate_unique_file_name(video.filename)
+        data = upload.file.read()
+        file_name = generate_unique_file_name(upload.filename)
 
         
         try:
-            extension = video.filename.split('.')[-1]
+            extension = upload.filename.split('.')[-1]
         except IndexError:
             extension = ""
         
-        video_upload_path = f'../uploads/{video_file_name}.{extension}'
+        file_upload_path = f'../uploads/{file_name}.{extension}'
         
-        with open(video_upload_path, 'wb') as f:
-            f.write(video_data)
-        
-        thumbnail_file_name = generate_unique_file_name(f'thumbnail_{video.filename}.jpeg')
-        
-        thumbnail_upload_path = f'../uploads/{thumbnail_file_name}.jpeg'
-
-        generate_video_thumbnail(video_upload_path, thumbnail_upload_path)
-
+        with open(file_upload_path, 'wb') as f:
+            f.write(data)
 
     except Exception as e:
         print(e)
         return {"message": "There was an error uploading the file"}
     
     finally:
-        video.file.close()
+        upload.file.close()
     
-    return f'{video_file_name}.{extension}', f'{thumbnail_file_name}.jpeg'
+    return f'{file_name}.{extension}'
+
 

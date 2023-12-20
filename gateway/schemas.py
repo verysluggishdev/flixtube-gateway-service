@@ -4,8 +4,6 @@ from typing import Optional
 from fastapi import File, UploadFile, Form
 from dataclasses import dataclass
 
-from pydantic.types import conint
-
 class UserOut(BaseModel):
     id: int
     email: EmailStr
@@ -16,15 +14,26 @@ class UserOut(BaseModel):
     class Config:
         form_attribtes = True
 
-class UserCreate(BaseModel):
-    email: EmailStr
-    password: str
-    channelID: str
-    channelName: str
+@dataclass
+class CreateUserForm:
+    email: EmailStr = Form(...)
+    password: str = Form(...)
+    channelID: str = Form(...)
+    channelName: str = Form(...)
+    avatar: UploadFile = File(...)
 
-class UserLogin(BaseModel):
-    email: EmailStr
-    password: str
+@dataclass
+class LoginUserForm:
+    email: EmailStr = Form(...)
+    password: str = Form(...)
+
+@dataclass
+class UpdateUserForm:
+    email: Optional[str] = Form(None)
+    password: Optional[str] = Form(None)
+    channelID: Optional[str] = Form(None)
+    channelName: Optional[str] = Form(None)
+    avatar: Optional[UploadFile] = File(None)
 
 
 class Token(BaseModel):
@@ -34,15 +43,6 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     id: Optional[str] = None
-
-
-
-class PostOut(BaseModel):
-    title: str
-    description: str
-    thumbnail: str
-    video: str
-    created_at: datetime
 
 @dataclass
 class CreatePostForm:

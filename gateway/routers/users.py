@@ -12,9 +12,10 @@ router = APIRouter(
 
 
 
-@router.post("/", status_code=status.HTTP_201_CREATED, response_model=schemas.UserOut)
-def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
-
+@router.post("", status_code=status.HTTP_201_CREATED)
+def create_user(user: schemas.CreateUserForm = Depends(), db: Session = Depends(get_db)):
+    user.avatar = utils.handleFileUpload(user.avatar)
+    
     # hash the password - user.password
     hashed_password = utils.hash(user.password)
     user.password = hashed_password
@@ -27,7 +28,7 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
         raise HTTPException(status_code=status.HTTP_409_CONFLICT,
                             detail=f"email is already in use")
 
-    new_user = models.User(**user.model_dump())
+    new_user = models.User(**user.__dict__)
     db.add(new_user)
     db.commit()
     
