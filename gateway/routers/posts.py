@@ -34,7 +34,7 @@ def create_post(post: schemas.CreatePostForm = Depends(), db: Session = Depends(
     return {"message": "post was successfully created"}
 
 @router.put("/{id}")
-def create_post(id: int, post: schemas.UpdatePostForm = Depends(), db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
+def update_post(id: int, post: schemas.UpdatePostForm = Depends(), db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
     
     post_query = db.query(models.Post).filter(models.Post.id==id)
 
@@ -85,11 +85,14 @@ def get_post(id: int, db: Session = Depends(get_db), current_user: int = Depends
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_post(id: int, db: Session = Depends(get_db), current_user: models.User = Depends(oauth2.get_current_user)):
-    post = db.query(models.Post).filter(models.Post.id==id)
-    if not post.first():
+    post_query = db.query(models.Post).filter(models.Post.id==id)
+    post = post_query.first()
+    if not post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id: {id} was not found")
-    if post.first().owner_id != current_user.id:
+    if post.owner_id != current_user.id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Not authorized to delete this post")
-    post.delete(synchronize_session=False)
+    os.remove(f'../uploads/{post.thumbnail}')
+    os.remove(f'../uploads/{post.video}')
+    post_query.delete(synchronize_session=False)
     db.commit()
     return Response(status_code=status.HTTP_204_NO_CONTENT)
