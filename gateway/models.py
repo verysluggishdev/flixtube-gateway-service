@@ -16,14 +16,6 @@ class User(Base):
     password = Column(String, nullable=False)
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
 
-class Avatar(Base):
-    __tablename__ = "avatars"
-    id = Column(Integer, primary_key=True, nullable=False)
-    filename = Column(String, index=True, nullable=False)
-    owner_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    owner = relationship("User")
-    updated_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
-
 
 class Post(Base):
     __tablename__ = "posts"
