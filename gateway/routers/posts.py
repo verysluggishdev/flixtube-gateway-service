@@ -81,7 +81,7 @@ def get_post(id: int, db: Session = Depends(get_db), current_user: int = Depends
     .options(joinedload(models.Post.owner))  
     .first()
     )
-
+    
     response = {"post":data[0], "avatar": data[1], "channelID": data[2]}
 
     if not data:

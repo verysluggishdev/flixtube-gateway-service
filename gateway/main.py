@@ -1,5 +1,10 @@
 from fastapi import FastAPI
 from .routers import users, auth, media, posts
+from fastapi.middleware.cors import CORSMiddleware
+
+
+origins = ["*"]
+
 
 app = FastAPI()
 
