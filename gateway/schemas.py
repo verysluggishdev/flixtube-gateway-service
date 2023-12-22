@@ -48,12 +48,14 @@ class TokenData(BaseModel):
 class CreatePostForm:
     title: str = Form(...)
     description: str = Form(...)
+    category: str = Form(...)
     video: UploadFile = File(...)
 
 @dataclass
 class UpdatePostForm:
     title: Optional[str] = Form(None)
     description: Optional[str] = Form(None)
+    category: Optional[str] = Form(None)
     video: Optional[UploadFile] = File(None)
 
 class Post(BaseModel):

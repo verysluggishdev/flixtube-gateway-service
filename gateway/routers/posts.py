@@ -1,6 +1,6 @@
 from typing import Optional
 from .. import schemas,models, oauth2
-from fastapi import Response, status, HTTPException, Depends, APIRouter, File, UploadFile
+from fastapi import Response, status, HTTPException, Depends, APIRouter
 from sqlalchemy.orm import Session
 from typing import List
 from ..database import get_db 
@@ -18,7 +18,6 @@ router = APIRouter(
 
 @router.post("", status_code=status.HTTP_201_CREATED)
 def create_post(post: schemas.CreatePostForm = Depends(), db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
-    
     video_file_name = handleFileUpload(post.video)
 
     thumbnail_file_name = generate_unique_file_name(f"thumbnail_{post.video}")+'.jpeg'
@@ -29,7 +28,8 @@ def create_post(post: schemas.CreatePostForm = Depends(), db: Session = Depends(
                            description=post.description, 
                            thumbnail=thumbnail_file_name,
                            video=video_file_name,
-                           owner_id=current_user.id
+                           owner_id=current_user.id,
+                           category=post.category
     )
 
     db.add(new_post)
@@ -52,7 +52,6 @@ def update_post(id: int, post: schemas.UpdatePostForm = Depends(), db: Session =
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Not authorized to update this post")
 
     if post.video:
-        print(post.video)
         os.remove(f'../uploads/{previous_post.thumbnail}')
         os.remove(f'../uploads/{previous_post.video}')
         post.video = handleFileUpload(post.video)
