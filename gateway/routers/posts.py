@@ -90,6 +90,25 @@ def get_post(id: int, db: Session = Depends(get_db), current_user: int = Depends
 
     return response
 
+@router.get("", response_model=List[schemas.PostResponse])
+def get_posts(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user), category: str = 'all', limit: int = 10, skip: int = 0, search: Optional[str]=""):
+
+    items = (
+    db.query(models.Post, models.User.avatar, models.User.channelID)
+    .join(models.User, models.User.id == models.Post.owner_id)
+    )
+
+    if category != 'all':
+        items = items.filter(models.Post.category == category)
+    
+    items = items.options(joinedload(models.Post.owner)).filter(models.Post.title.contains(search) | models.Post.description.contains(search)).limit(limit).offset(skip).all()
+
+    response = list()
+    for data in items:
+        response.append({"post":data[0], "avatar": data[1], "channelID": data[2]})
+
+    return response
+
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_post(id: int, db: Session = Depends(get_db), current_user: models.User = Depends(oauth2.get_current_user)):
