@@ -23,6 +23,7 @@ class Post(Base):
     title = Column(String, index=True, nullable=False)
     description = Column(String, index=True, nullable=False)
     thumbnail = Column(String, index=True, nullable=False)
+    category = Column(String, index=True, nullable=False)
     video = Column(String, index=True, nullable=False)
     owner_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     owner = relationship("User")
