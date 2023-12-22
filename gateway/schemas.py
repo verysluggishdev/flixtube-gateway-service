@@ -56,9 +56,14 @@ class UpdatePostForm:
     description: Optional[str] = Form(None)
     video: Optional[UploadFile] = File(None)
 
-class PostOut(BaseModel):
+class Post(BaseModel):
     title: str
     description: str
     thumbnail: str
     video: str
     created_at: datetime
+
+class PostResponse(BaseModel):
+    post: Post
+    avatar: str
+    channelID: str

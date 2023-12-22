@@ -6,6 +6,7 @@ from typing import List
 from ..database import get_db 
 from sqlalchemy import func
 from ..utils import handleFileUpload, generate_unique_file_name, generate_video_thumbnail
+from sqlalchemy.orm import joinedload
 import os
 
 router = APIRouter(
@@ -71,15 +72,24 @@ def update_post(id: int, post: schemas.UpdatePostForm = Depends(), db: Session =
     return {"message": "post was successfully updated"}
 
 
-@router.get("/{id}", response_model=schemas.PostOut)
+@router.get("/{id}", response_model=schemas.PostResponse)
 def get_post(id: int, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
 
-    post = db.query(models.Post).filter(models.Post.id == id).first()
-    if not post:
+    data = (
+    db.query(models.Post, models.User.avatar, models.User.channelID)
+    .join(models.User, models.User.id == models.Post.owner_id)
+    .filter(models.Post.id == id)  
+    .options(joinedload(models.Post.owner))  
+    .first()
+    )
+
+    response = {"post":data[0], "avatar": data[1], "channelID": data[2]}
+
+    if not data:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"post with id: {id} was not found")
 
-    return post
+    return response
 
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
