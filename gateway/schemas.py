@@ -59,6 +59,7 @@ class UpdatePostForm:
     video: Optional[UploadFile] = File(None)
 
 class Post(BaseModel):
+    id: int
     title: str
     description: str
     thumbnail: str
