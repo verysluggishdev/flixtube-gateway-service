@@ -71,30 +71,41 @@ def update_post(id: int, post: schemas.UpdatePostForm = Depends(), db: Session =
     return {"message": "post was successfully updated"}
 
 
-@router.get("/{id}", response_model=schemas.PostResponse)
+@router.get("/{id}", response_model=schemas.SinglePostResponse)
 def get_post(id: int, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
 
-    data = (
-    db.query(models.Post, models.User.avatar, models.User.channelID)
-    .join(models.User, models.User.id == models.Post.owner_id)
-    .filter(models.Post.id == id)  
-    .options(joinedload(models.Post.owner))  
-    .first()
+    post = (
+        db.query(models.Post)
+        .join(models.User, models.User.id == models.Post.owner_id)
+        .filter(models.Post.id == id)  
+        .options(joinedload(models.Post.owner))
+        .first()
     )
-    
-    response = {"post":data[0], "avatar": data[1], "channelID": data[2]}
 
-    if not data:
+    if not post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"post with id: {id} was not found")
 
+
+    likes_count = len(db.query(models.PostMetrics).filter(models.PostMetrics.liked == True).all())
+    dislikes_count = len(db.query(models.PostMetrics).filter(models.PostMetrics.disliked == True).all())
+    shares_count = len(db.query(models.PostMetrics).filter(models.PostMetrics.shared == True).all())
+
+    post_metrics = {
+        'likes': likes_count,
+        'dislikes': dislikes_count,
+        'shares': shares_count
+    }
+
+    response = {**post.__dict__, **post_metrics}
+
     return response
 
-@router.get("", response_model=List[schemas.PostResponse])
+@router.get("", response_model=List[schemas.Post])
 def get_posts(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user), category: str = 'all', limit: int = 10, skip: int = 0, search: Optional[str]=""):
 
     items = (
-    db.query(models.Post, models.User.avatar, models.User.channelID)
+    db.query(models.Post)
     .join(models.User, models.User.id == models.Post.owner_id)
     )
 
@@ -103,11 +114,7 @@ def get_posts(db: Session = Depends(get_db), current_user: int = Depends(oauth2.
     
     items = items.options(joinedload(models.Post.owner)).filter(models.Post.title.contains(search) | models.Post.description.contains(search)).limit(limit).offset(skip).all()
 
-    response = list()
-    for data in items:
-        response.append({"post":data[0], "avatar": data[1], "channelID": data[2]})
-
-    return response
+    return items
 
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)

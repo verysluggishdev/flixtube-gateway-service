@@ -15,6 +15,7 @@ class User(Base):
     avatar = Column(String, nullable=False)
     password = Column(String, nullable=False)
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
+    post = relationship("Post", back_populates="owner")
 
 
 class Post(Base):
@@ -26,8 +27,7 @@ class Post(Base):
     category = Column(String, index=True, nullable=False)
     video = Column(String, index=True, nullable=False)
     owner_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    owner = relationship("User")
-    post_metrics = relationship("PostMetrics", back_populates="post")
+    owner = relationship("User", back_populates='post')
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
 
 
@@ -35,7 +35,7 @@ class PostMetrics(Base):
     __tablename__ = 'post_metrics'
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
     post_id = Column(Integer, ForeignKey("posts.id", ondelete="CASCADE"), primary_key=True)
-    post = relationship("Post", back_populates='post_metrics')
+    post = relationship("Post")
     user = relationship("User")
     liked = Column(Boolean, index=True, nullable=False, server_default='false')
     disliked = Column(Boolean, index=True, nullable=False, server_default='false')

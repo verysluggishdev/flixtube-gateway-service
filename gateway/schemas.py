@@ -4,16 +4,6 @@ from typing import Optional
 from fastapi import File, UploadFile, Form
 from dataclasses import dataclass
 
-class UserOut(BaseModel):
-    id: int
-    email: EmailStr
-    channelID: str
-    channelName: str
-    created_at: datetime
-
-    class Config:
-        form_attribtes = True
-
 @dataclass
 class CreateUserForm:
     email: EmailStr = Form(...)
@@ -65,11 +55,21 @@ class Post(BaseModel):
     thumbnail: str
     video: str
     created_at: datetime
+
+class UserResponseWithPost(BaseModel):
+    channelName: str
+    channelID: str
+    avatar: str
+
+
+class SinglePostResponse(Post):
+    owner: UserResponseWithPost
     likes: int
     dislikes: int
     shares: int
 
-class PostResponse(BaseModel):
-    post: Post
-    avatar: str
+class UserResponse(BaseModel):
+    channelName: str
     channelID: str
+    avatar: str
+
