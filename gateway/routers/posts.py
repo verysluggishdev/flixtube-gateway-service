@@ -87,9 +87,10 @@ def get_post(id: int, db: Session = Depends(get_db), current_user: int = Depends
                             detail=f"post with id: {id} was not found")
 
 
-    likes_count = len(db.query(models.PostMetrics).filter(models.PostMetrics.liked == True).all())
-    dislikes_count = len(db.query(models.PostMetrics).filter(models.PostMetrics.disliked == True).all())
-    shares_count = len(db.query(models.PostMetrics).filter(models.PostMetrics.shared == True).all())
+    likes_count = db.query(func.count()).filter(models.PostMetrics.liked.is_(True)).scalar()
+    dislikes_count = db.query(func.count()).filter(models.PostMetrics.disliked.is_(True)).scalar()
+    shares_count = db.query(func.count()).filter(models.PostMetrics.shared.is_(True)).scalar()
+
 
     post_metrics = {
         'likes': likes_count,
