@@ -1,5 +1,5 @@
 from .database import Base
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey, BigInteger
 from sqlalchemy.sql.sqltypes import TIMESTAMP
 from sqlalchemy.sql.expression import text
 from sqlalchemy.orm import relationship
@@ -28,3 +28,6 @@ class Post(Base):
     owner_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     owner = relationship("User")
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
+    likes = Column(BigInteger, index=True, nullable=False, server_default='0')
+    dislikes = Column(BigInteger, index=True, nullable=False, server_default='0')
+    shares = Column(BigInteger, index=True, nullable=False, server_default='0')

@@ -65,6 +65,9 @@ class Post(BaseModel):
     thumbnail: str
     video: str
     created_at: datetime
+    likes: int
+    dislikes: int
+    shares: int
 
 class PostResponse(BaseModel):
     post: Post
