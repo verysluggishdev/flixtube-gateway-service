@@ -16,7 +16,7 @@ router = APIRouter(
 
 
 
-@router.post("", status_code=status.HTTP_201_CREATED)
+@router.post("", status_code=status.HTTP_201_CREATED, response_model=schemas.Post)
 def create_post(post: schemas.CreatePostForm = Depends(), db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
     video_file_name = handleFileUpload(post.video)
 
@@ -34,11 +34,13 @@ def create_post(post: schemas.CreatePostForm = Depends(), db: Session = Depends(
 
     db.add(new_post)
     db.commit()
-    db.refresh(new_post)  
-    
-    return {"message": "post was successfully created"}
+    db.refresh(new_post)
 
-@router.put("/{id}")
+    new_post = new_post.__dict__
+    
+    return new_post
+
+@router.put("/{id}", response_model=schemas.Post)
 def update_post(id: int, post: schemas.UpdatePostForm = Depends(), db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
 
     post_query = db.query(models.Post).filter(models.Post.id==id)
@@ -67,8 +69,10 @@ def update_post(id: int, post: schemas.UpdatePostForm = Depends(), db: Session =
     
     post_query.update(post.__dict__, synchronize_session=False)
     db.commit()
+
+    post = post_query.first().__dict__
             
-    return {"message": "post was successfully updated"}
+    return post
 
 
 @router.get("/{id}", response_model=schemas.SinglePostResponse)

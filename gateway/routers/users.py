@@ -13,7 +13,7 @@ router = APIRouter(
 
 
 
-@router.post("", status_code=status.HTTP_201_CREATED)
+@router.post("", status_code=status.HTTP_201_CREATED, response_model=schemas.UserResponse)
 def create_user(user: schemas.CreateUserForm = Depends(), db: Session = Depends(get_db)):
     user.avatar = utils.handleFileUpload(user.avatar)
     
@@ -49,7 +49,7 @@ def get_user(id: int, db: Session = Depends(get_db), ):
     return user
 
 
-@router.put("/{id}")
+@router.put("/{id}", response_model=schemas.UserResponse)
 def update_user(id: int, user: schemas.UpdateUserForm = Depends(), db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
     
     user_query = db.query(models.User).filter(models.User.id==id)
@@ -75,8 +75,10 @@ def update_user(id: int, user: schemas.UpdateUserForm = Depends(), db: Session =
     
     user_query.update(user.__dict__, synchronize_session=False)
     db.commit()
+
+    user = user_query.first().__dict__
     
-    return {"success"}
+    return user
 
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
