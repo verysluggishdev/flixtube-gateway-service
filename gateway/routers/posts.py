@@ -149,7 +149,7 @@ def update_post_metrics(id: int, post_metric: schemas.CreatePostMetric, db: Sess
     post = post_query.first()
     if not post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id: {id} was not found")
-    query_for_metric = db.query(models.PostMetrics).filter(models.PostMetrics.post_id == id and models.PostMetrics.user_id == current_user.id)
+    query_for_metric = db.query(models.PostMetrics).filter(models.PostMetrics.post_id == id).filter(models.PostMetrics.user_id == current_user.id)
     if not query_for_metric.first():
         new_metric = models.PostMetrics(user_id=current_user.id, post_id=id, **post_metric.model_dump())
         db.add(new_metric)
