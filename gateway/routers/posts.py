@@ -87,9 +87,9 @@ def get_post(id: int, db: Session = Depends(get_db), current_user: int = Depends
                             detail=f"post with id: {id} was not found")
 
 
-    likes_count = db.query(func.count()).filter(models.PostMetrics.liked.is_(True)).scalar()
-    dislikes_count = db.query(func.count()).filter(models.PostMetrics.disliked.is_(True)).scalar()
-    shares_count = db.query(func.count()).filter(models.PostMetrics.shared.is_(True)).scalar()
+    likes_count = db.query(func.count()).filter(models.PostMetrics.liked.is_(True)).filter(models.PostMetrics.post_id == id).scalar()
+    dislikes_count = db.query(func.count()).filter(models.PostMetrics.disliked.is_(True)).filter(models.PostMetrics.post_id == id).scalar()
+    shares_count = db.query(func.count()).filter(models.PostMetrics.shared.is_(True)).filter(models.PostMetrics.post_id == id).scalar()
 
 
     post_metrics = {
@@ -131,3 +131,19 @@ def delete_post(id: int, db: Session = Depends(get_db), current_user: models.Use
     post_query.delete(synchronize_session=False)
     db.commit()
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.post("/{id}", status_code=status.HTTP_204_NO_CONTENT)
+def update_post_metrics(id: int, post_metric: schemas.CreatePostMetric, db: Session = Depends(get_db), current_user: models.User = Depends(oauth2.get_current_user)):
+    post_query = db.query(models.Post).filter(models.Post.id==id)
+    post = post_query.first()
+    if not post:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id: {id} was not found")
+    query_for_metric = db.query(models.PostMetrics).filter(models.PostMetrics.post_id == id and models.PostMetrics.user_id == current_user.id)
+    if not query_for_metric.first():
+        new_metric = models.PostMetrics(user_id=current_user.id, post_id=id, **post_metric.model_dump())
+        db.add(new_metric)
+        db.commit()
+    else:
+        query_for_metric.update(post_metric.model_dump(), synchronize_session=False)
+        db.commit()

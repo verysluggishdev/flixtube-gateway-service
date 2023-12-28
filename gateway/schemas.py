@@ -73,3 +73,7 @@ class UserResponse(BaseModel):
     channelID: str
     avatar: str
 
+class CreatePostMetric(BaseModel):
+    liked: bool
+    disliked: bool
+    shared: bool
