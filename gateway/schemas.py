@@ -48,6 +48,11 @@ class UpdatePostForm:
     category: Optional[str] = Form(None)
     video: Optional[UploadFile] = File(None)
 
+class UserResponseWithPost(BaseModel):
+    channelName: str
+    channelID: str
+    avatar: str
+
 class Post(BaseModel):
     id: int
     title: str
@@ -55,11 +60,7 @@ class Post(BaseModel):
     thumbnail: str
     video: str
     created_at: datetime
-
-class UserResponseWithPost(BaseModel):
-    channelName: str
-    channelID: str
-    avatar: str
+    owner: UserResponseWithPost
 
 
 class SinglePostResponse(Post):
