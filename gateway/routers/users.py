@@ -73,6 +73,9 @@ def update_user(id: int, user: schemas.UpdateUserForm = Depends(), db: Session =
     for attribute in empty_attributes:
         exec(f'del user.{attribute}')
     
+    hashed_password = utils.hash(user.password)
+    user.password = hashed_password
+    
     user_query.update(user.__dict__, synchronize_session=False)
     db.commit()
 

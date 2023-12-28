@@ -102,7 +102,13 @@ def get_post(id: int, db: Session = Depends(get_db), current_user: int = Depends
         'shares': shares_count
     }
 
-    response = {**post.__dict__, **post_metrics}
+    user_actions = db.query(models.PostMetrics).filter(models.PostMetrics.user_id == current_user.id).filter(models.PostMetrics.post_id==id).first()
+    if user_actions:
+        response = {**post.__dict__, **post_metrics, **user_actions.__dict__}
+    else:
+        response = {**post.__dict__, **post_metrics, **{'liked': False, 'disliked': False, 'shared':False}}
+
+    
 
     return response
 

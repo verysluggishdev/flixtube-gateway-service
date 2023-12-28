@@ -68,6 +68,9 @@ class SinglePostResponse(Post):
     likes: int
     dislikes: int
     shares: int
+    liked: bool
+    disliked: bool
+    shared: bool
 
 class UserResponse(BaseModel):
     channelName: str
