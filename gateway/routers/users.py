@@ -50,8 +50,7 @@ def get_user(id: int, db: Session = Depends(get_db), ):
 
 
 @router.put("/{id}", response_model=schemas.UserResponse)
-def update_user(id: int, user: schemas.UpdateUserForm = Depends(), db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
-    
+def update_user(id: int, user: schemas.UpdateUserForm = Depends(), db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):  
     user_query = db.query(models.User).filter(models.User.id==id)
 
     previous_user = user_query.first()
@@ -63,9 +62,11 @@ def update_user(id: int, user: schemas.UpdateUserForm = Depends(), db: Session =
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Not authorized to update this user")
 
 
-    if user.avatar:
+    if user.avatar.filename:
         user.avatar = utils.handleFileUpload(user.avatar)
         os.remove(f'../uploads/{previous_user.avatar}')
+    else:
+        user.avatar = None
     
 
     empty_attributes = [key for key, value in user.__dict__.items() if value is None]
