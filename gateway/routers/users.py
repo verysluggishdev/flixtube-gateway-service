@@ -62,11 +62,12 @@ def update_user(id: int, user: schemas.UpdateUserForm = Depends(), db: Session =
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Not authorized to update this user")
 
 
-    if user.avatar.filename:
+    if user.avatar:
         user.avatar = utils.handleFileUpload(user.avatar)
-        os.remove(f'../uploads/{previous_user.avatar}')
-    else:
-        user.avatar = None
+        try:
+            os.remove(f'../uploads/{previous_user.avatar}')
+        except Exception as e:
+            print(e)
     
 
     empty_attributes = [key for key, value in user.__dict__.items() if value is None]
@@ -93,7 +94,10 @@ def delete_user(id: int, db: Session = Depends(get_db), current_user: models.Use
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"user with id: {id} was not found")
     if user.id != current_user.id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Not authorized to delete this user")
-    os.remove(f'../uploads/{user.avatar}')
+    try:
+        os.remove(f'../uploads/{user.avatar}')
+    except Exception as e:
+        print(e)
     user_query.delete(synchronize_session=False)
     db.commit()
     return Response(status_code=status.HTTP_204_NO_CONTENT)

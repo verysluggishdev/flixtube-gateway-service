@@ -37,11 +37,14 @@ def create_post(post: schemas.CreatePostForm = Depends(), db: Session = Depends(
     db.refresh(new_post)
 
     new_post = new_post.__dict__
+    new_post['owner']=current_user
     
     return new_post
 
 @router.put("/{id}", response_model=schemas.Post)
 def update_post(id: int, post: schemas.UpdatePostForm = Depends(), db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
+
+    print(post)
 
     post_query = db.query(models.Post).filter(models.Post.id==id)
 
@@ -54,8 +57,11 @@ def update_post(id: int, post: schemas.UpdatePostForm = Depends(), db: Session =
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Not authorized to update this post")
 
     if post.video:
-        os.remove(f'../uploads/{previous_post.thumbnail}')
-        os.remove(f'../uploads/{previous_post.video}')
+        try:
+            os.remove(f'../uploads/{previous_post.thumbnail}')
+            os.remove(f'../uploads/{previous_post.video}')
+        except Exception as e:
+            print(e)
         post.video = handleFileUpload(post.video)
         thumbnail_file_name = generate_unique_file_name(f"thumbnail_{post.video}")+'.jpeg'
         generate_video_thumbnail(f'../uploads/{post.video}', f'../uploads/{thumbnail_file_name}')
@@ -71,6 +77,7 @@ def update_post(id: int, post: schemas.UpdatePostForm = Depends(), db: Session =
     db.commit()
 
     post = post_query.first().__dict__
+    post['owner'] = current_user
             
     return post
 
@@ -113,7 +120,7 @@ def get_post(id: int, db: Session = Depends(get_db), current_user: int = Depends
     return response
 
 @router.get("", response_model=List[schemas.Post])
-def get_posts(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user), category: str = 'all', limit: int = 10, skip: int = 0, search: Optional[str]=""):
+def get_posts(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user), category: str = 'all', limit: int = 10, skip: int = 0, search: Optional[str]="", owner_id: int = 0):
 
     items = (
     db.query(models.Post)
@@ -123,7 +130,12 @@ def get_posts(db: Session = Depends(get_db), current_user: int = Depends(oauth2.
     if category != 'all':
         items = items.filter(models.Post.category == category)
     
-    items = items.options(joinedload(models.Post.owner)).filter(models.Post.title.contains(search) | models.Post.description.contains(search)).limit(limit).offset(skip).all()
+    if owner_id:
+        items = items.filter(models.Post.owner_id==owner_id)
+    
+    items = items.options(joinedload(models.Post.owner)).filter(models.Post.title.contains(search) | models.Post.description.contains(search)).limit(limit).offset(skip)
+    
+    items = items.all()
 
     return items
 
@@ -136,8 +148,13 @@ def delete_post(id: int, db: Session = Depends(get_db), current_user: models.Use
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id: {id} was not found")
     if post.owner_id != current_user.id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Not authorized to delete this post")
-    os.remove(f'../uploads/{post.thumbnail}')
-    os.remove(f'../uploads/{post.video}')
+    try:
+        os.remove(f'../uploads/{post.thumbnail}')
+        os.remove(f'../uploads/{post.video}')
+    except Exception as e:
+        print(e)
+    
+
     post_query.delete(synchronize_session=False)
     db.commit()
     return Response(status_code=status.HTTP_204_NO_CONTENT)
