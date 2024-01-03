@@ -11,6 +11,7 @@ class CreateUserForm:
     channelID: str = Form(...)
     channelName: str = Form(...)
     avatar: UploadFile = File(...)
+    channelDescription: Optional[str] = Form(None)
 
 @dataclass
 class LoginUserForm:
@@ -24,6 +25,7 @@ class UpdateUserForm:
     channelID: Optional[str] = Form(None)
     channelName: Optional[str] = Form(None)
     avatar: Optional[UploadFile] = File(None)
+    channelDescription: Optional[str] = Form(None)
 
 
 class Token(BaseModel):
@@ -76,6 +78,7 @@ class UserResponse(BaseModel):
     channelName: str
     channelID: str
     avatar: str
+    channelDescription: str | None
 
 class CreatePostMetric(BaseModel):
     liked: bool

@@ -120,7 +120,7 @@ def get_post(id: int, db: Session = Depends(get_db), current_user: int = Depends
     return response
 
 @router.get("", response_model=List[schemas.Post])
-def get_posts(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user), category: str = 'all', limit: int = 10, skip: int = 0, search: Optional[str]="", owner_id: int = 0):
+def get_posts(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user), category: str = 'all', limit: int = 10, skip: int = 0, search: Optional[str]="", owner_id: int = 0, sort_by_date:int =0):
 
     items = (
     db.query(models.Post)
@@ -129,6 +129,9 @@ def get_posts(db: Session = Depends(get_db), current_user: int = Depends(oauth2.
 
     if category != 'all':
         items = items.filter(models.Post.category == category)
+    
+    if sort_by_date:
+        items = items.order_by(models.Post.created_at.desc())
     
     if owner_id:
         items = items.filter(models.Post.owner_id==owner_id)

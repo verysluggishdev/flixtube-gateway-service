@@ -12,6 +12,7 @@ class User(Base):
     email = Column(String, nullable=False, unique=True)
     channelID = Column(String, nullable=False, unique=True)
     channelName = Column(String, nullable=False)
+    channelDescription = Column(String, nullable=True)
     avatar = Column(String, nullable=False)
     password = Column(String, nullable=False)
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
