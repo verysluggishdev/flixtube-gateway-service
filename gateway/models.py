@@ -41,3 +41,8 @@ class PostMetrics(Base):
     liked = Column(Boolean, index=True, nullable=False, server_default='false')
     disliked = Column(Boolean, index=True, nullable=False, server_default='false')
     shared = Column(Boolean, index=True, nullable=False, server_default='false')
+
+class Subscribers(Base):
+    __tablename__ = 'subscribers'
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
+    subscribed_to = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
