@@ -2,7 +2,7 @@ from fastapi import FastAPI, Response, status, HTTPException, Depends, APIRouter
 from sqlalchemy.orm import Session
 from .. import models, schemas, utils, oauth2
 from ..database import get_db
-import sqlalchemy
+from sqlalchemy import func
 import os
 
 router = APIRouter(
@@ -42,11 +42,12 @@ def create_user(user: schemas.CreateUserForm = Depends(), db: Session = Depends(
 @router.get('/{id}', response_model=schemas.UserResponse)
 def get_user(id: int, db: Session = Depends(get_db), ):
     user = db.query(models.User).filter(models.User.id == id).first()
+    subscriber_count = db.query(func.count(models.Subscribers.subscribed_to)).filter(models.Subscribers.subscribed_to == id).scalar()
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"User with id: {id} does not exist")
 
-    return user
+    return {**user.__dict__, 'subscriber_count':subscriber_count}
 
 
 @router.put("/{id}", response_model=schemas.UserResponse)

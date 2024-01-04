@@ -79,6 +79,7 @@ class UserResponse(BaseModel):
     channelID: str
     avatar: str
     channelDescription: str | None
+    subscriber_count: int
 
 class CreatePostMetric(BaseModel):
     liked: bool
