@@ -83,7 +83,7 @@ def update_post(id: int, post: schemas.UpdatePostForm = Depends(), db: Session =
 
 
 @router.get("/{id}", response_model=schemas.SinglePostResponse)
-def get_post(id: int, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
+def get_post(id: int, db: Session = Depends(get_db), current_user: models.User = Depends(oauth2.get_current_user)):
 
     post = (
         db.query(models.Post)
@@ -109,13 +109,13 @@ def get_post(id: int, db: Session = Depends(get_db), current_user: int = Depends
         'shares': shares_count
     }
 
+    is_subscribed = db.query(models.Subscribers).filter(models.Subscribers.subscribed_to == post.owner.id).filter(models.Subscribers.user_id == current_user.id).first() != None
+
     user_actions = db.query(models.PostMetrics).filter(models.PostMetrics.user_id == current_user.id).filter(models.PostMetrics.post_id==id).first()
     if user_actions:
         response = {**post.__dict__, **post_metrics, **user_actions.__dict__}
     else:
-        response = {**post.__dict__, **post_metrics, **{'liked': False, 'disliked': False, 'shared':False}}
-
-    
+        response = {**post.__dict__, **post_metrics, **{'liked': False, 'disliked': False, 'shared':False}, 'subscribed': is_subscribed}
 
     return response
 

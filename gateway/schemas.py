@@ -54,6 +54,7 @@ class UserResponseWithPost(BaseModel):
     channelName: str
     channelID: str
     avatar: str
+    id: int
 
 class Post(BaseModel):
     id: int
@@ -73,6 +74,7 @@ class SinglePostResponse(Post):
     liked: bool
     disliked: bool
     shared: bool
+    subscribed: bool
 
 class UserResponse(BaseModel):
     channelName: str
@@ -80,6 +82,7 @@ class UserResponse(BaseModel):
     avatar: str
     channelDescription: str | None
     subscriber_count: int
+    subscribed: bool
 
 class CreatePostMetric(BaseModel):
     liked: bool

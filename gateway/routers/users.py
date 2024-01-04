@@ -40,14 +40,16 @@ def create_user(user: schemas.CreateUserForm = Depends(), db: Session = Depends(
 
 
 @router.get('/{id}', response_model=schemas.UserResponse)
-def get_user(id: int, db: Session = Depends(get_db), ):
+def get_user(id: int, db: Session = Depends(get_db), current_user: models.User = Depends(oauth2.get_current_user)):
     user = db.query(models.User).filter(models.User.id == id).first()
     subscriber_count = db.query(func.count(models.Subscribers.subscribed_to)).filter(models.Subscribers.subscribed_to == id).scalar()
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"User with id: {id} does not exist")
+    
+    is_subscribed = db.query(models.Subscribers).filter(models.Subscribers.subscribed_to == id).filter(models.Subscribers.user_id == current_user.id).first() != None
 
-    return {**user.__dict__, 'subscriber_count':subscriber_count}
+    return {**user.__dict__, 'subscriber_count':subscriber_count, 'subscribed': is_subscribed}
 
 
 @router.put("/{id}", response_model=schemas.UserResponse)
