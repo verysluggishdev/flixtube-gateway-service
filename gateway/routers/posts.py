@@ -120,7 +120,7 @@ def get_post(id: int, db: Session = Depends(get_db), current_user: models.User =
     return response
 
 @router.get("", response_model=List[schemas.Post])
-def get_posts(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user), category: str = 'all', limit: int = 10, skip: int = 0, search: Optional[str]="", owner_id: int = 0, sort_by_date:int =0):
+def get_posts(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user), category: str = 'all', limit: int = 10, skip: int = 0, search: Optional[str]="", owner_id: int = 0, sort_by_date:int =0, subscribed:bool =False):
 
     items = (
     db.query(models.Post)
@@ -139,6 +139,11 @@ def get_posts(db: Session = Depends(get_db), current_user: int = Depends(oauth2.
     items = items.options(joinedload(models.Post.owner)).filter(models.Post.title.contains(search) | models.Post.description.contains(search)).limit(limit).offset(skip)
     
     items = items.all()
+
+    if subscribed:
+        for item in items:
+            if not db.query(models.Subscribers).filter(models.Subscribers.user_id == current_user.id).filter(models.Subscribers.subscribed_to == item.owner_id).all():
+                items.remove(item)
 
     return items
 

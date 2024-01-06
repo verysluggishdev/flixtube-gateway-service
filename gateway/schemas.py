@@ -77,6 +77,7 @@ class SinglePostResponse(Post):
     subscribed: bool
 
 class UserResponse(BaseModel):
+    id: int
     channelName: str
     channelID: str
     avatar: str

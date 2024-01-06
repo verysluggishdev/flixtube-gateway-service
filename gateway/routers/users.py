@@ -10,9 +10,6 @@ router = APIRouter(
     tags=['Users']
 )
 
-
-
-
 @router.post("", status_code=status.HTTP_201_CREATED, response_model=schemas.UserResponse)
 def create_user(user: schemas.CreateUserForm = Depends(), db: Session = Depends(get_db)):
     user.avatar = utils.handleFileUpload(user.avatar)
